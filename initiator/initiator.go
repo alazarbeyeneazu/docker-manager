@@ -2,14 +2,17 @@ package initiator
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
+	"html/template"
 	"log"
 	"net/http"
 	"os"
 	"os/signal"
+	"strings"
 	"syscall"
 
-	"github.com/Adamant-Investment-PLC/Backend/internal/handler/middleware"
+	"github.com/alazarbeyeneazu/docker-manager/internal/handler/middleware"
 
 	"github.com/gin-gonic/gin"
 	"github.com/spf13/viper"
@@ -50,6 +53,24 @@ func Initiate() {
 	server := gin.New()
 	server.Use(middleware.GinLogger(*logger))
 	server.Use(middleware.ErrorHandler())
+	// server.SetHTMLTemplate(template.Must(template.ParseFiles("templates/index.html")))
+	server.SetHTMLTemplate(template.Must(template.New("").Funcs(template.FuncMap{
+		"contains": func(s, substr string) bool {
+			return strings.Contains(s, substr)
+		},
+		"percentOf": func(substr, s string) int {
+			if strings.Contains(s, substr) {
+				return strings.Count(s, substr) * 50
+			}
+			return 0
+		}, "toJson": func(data interface{}) template.JS {
+			jsonData, err := json.Marshal(data)
+			if err != nil {
+				return ""
+			}
+			return template.JS(jsonData)
+		},
+	}).ParseGlob("templates/*.html")))
 	grp := server.Group("/api")
 	InitRouting(grp, *logger, handler)
 	logger.Info("router initialized")
