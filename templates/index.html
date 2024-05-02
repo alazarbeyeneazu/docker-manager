@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gin Template Rendering</title>
+    <!-- Include Tailwind CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <!-- Include Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        let upCount = 0;
+        let restartingCount = 0;
+        let exitedCount = 0;
+    </script>
+    <style>
+        /* Glass style effect */
+        .glass {
+            background-color: rgba(17, 65, 71, 0.3);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-green-300 to-indigo-800 min-h-screen flex justify-center items-center ">
+    <div class="container mx-auto px-4">
+        <h1 class="text-2xl font-bold mt-8 mb-4 text-white">List of Containers</h1>
+        <ul class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+            {{range .Containers}}
+            <li class="bg-white shadow rounded p-4">
+                <div>
+                    <span class="font-bold">Name:</span> {{.Name}}
+                </div>
+                <div>
+                    <span class="font-bold">Status:</span>
+                    <span>
+                        {{ if and .Status (contains .Status "Up") }}
+                            <span class="text-green-500">{{.Status}}</span>
+                            <div class="h-2 bg-green-200 rounded mt-1">
+                                <div class="h-full bg-green-500" style="width: 100%;"></div>
+                                <script> upCount=upCount+1; </script>
+                            </div>
+                        {{ else if and .Status (contains .Status "Exited") }}
+                            <span class="text-red-500">{{.Status}}</span>
+                            <div class="h-2 bg-red-200 rounded mt-1">
+                                <div class="h-full bg-red-500" style="width: 100%;"></div>
+                                <script> exitedCount=exitedCount+1; </script>
+                            </div>
+                        {{ else if and .Status (contains .Status "Restarting") }}
+                            <span class="text-yellow-500">{{.Status}}</span>
+                            <div class="h-2 bg-yellow-200 rounded mt-1">
+                                <div class="h-full bg-yellow-500" style="width: 100%;"></div>
+                                <script> restartingCount=restartingCount+1; </script>
+                            </div>
+                        {{ else }}
+                            {{.Status}}
+                        {{ end }}
+                    </span>
+                </div>
+            </li>
+            {{end}}
+        </ul>
+        
+        <!-- Charts -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mt-8">
+            <!-- Pie Chart -->
+            <div class="glass p-6 rounded">
+                <h2 class="text-xl font-bold mb-4 text-white">Pie Chart: Status Distribution</h2>
+                <canvas id="pieChart" width="400" height="400"></canvas>
+            </div>
+            
+            <!-- Bar Chart -->
+            <div class="glass p-6 rounded">
+                <h2 class="text-xl font-bold mb-4 text-white">Bar Chart: Status Distribution Over Time</h2>
+                <canvas id="barChart" width="400" height="400"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            // Data
+            const containerData = {{ toJson .Containers }};
+
+            // Pie Chart
+            new Chart(document.getElementById("pieChart"), {
+                type: 'pie',
+                data: {
+                    labels: ['Up', 'Restarting', 'Exited'],
+                    datasets: [{
+                        label: 'Containers',
+                        backgroundColor: ['#34D399', '#FBBF24', '#EF4444'],
+                        data: [upCount, restartingCount, exitedCount]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    legend: { display: true, position: 'bottom' },
+                    title: {
+                        display: true,
+                        text: 'Status Distribution'
+                    }
+                }
+            });
+
+            // Bar Chart
+            new Chart(document.getElementById("barChart"), {
+                type: 'bar',
+                data: {
+                    labels: ['Up', 'Restarting', 'Exited'],
+                    datasets: [{
+                        label: 'Containers',
+                        backgroundColor: ['#10b981', '#FBBF24', '#EF4444'],
+                        data: [upCount, restartingCount, exitedCount]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    legend: { display: false },
+                    title: {
+                        display: true,
+                        text: 'Status Distribution Over Time'
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,10 +1,10 @@
-package users
+package docker
 
 import (
 	"net/http"
 
-	"github.com/Adamant-Investment-PLC/Backend/internal/glue/routing"
-	"github.com/Adamant-Investment-PLC/Backend/internal/handler"
+	"github.com/alazarbeyeneazu/docker-manager/internal/glue/routing"
+	"github.com/alazarbeyeneazu/docker-manager/internal/handler"
 
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
@@ -13,14 +13,14 @@ import (
 func Init(
 	grp *gin.RouterGroup,
 	log zap.Logger,
-	user handler.User,
+	user handler.Docker,
 
 ) {
 	userRoute := []routing.Route{
 		{
-			Method:     http.MethodPost,
-			Path:       "/user",
-			Handler:    user.CreateUser,
+			Method:     http.MethodGet,
+			Path:       "/list",
+			Handler:    user.GetDockerStatus,
 			Middleware: []gin.HandlerFunc{},
 			Domains:    []string{"v1"},
 		},
